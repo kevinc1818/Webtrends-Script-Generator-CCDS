@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webtrends Script Generator</title>
+    <script type='text/javascript'>
+        function addFields(){
+            // Generate a dynamic number of inputs
+            var number = document.getElementById("member").value;
+            // Get the element where the inputs will be added to
+            var container = document.getElementById("container");
+            // Remove every children it had before
+            while (container.hasChildNodes()) {
+                container.removeChild(container.lastChild);
+            }
+            for (i=0;i<number;i++){
+                // Append a node with a random text
+                container.appendChild(document.createTextNode("Id " + (i+1) + " "));
+                // Create an <input> element, set its type and name attributes
+                var input = document.createElement("input");
+                input.type = "text";
+                input.name = "member" + i;
+                container.appendChild(input);
+
+                // Append a line break 
+                container.appendChild(document.createElement("br"));
+            }
+        }
+
+        function addDownloads(){
+            // Generate a dynamic number of inputs
+            var number = document.getElementById("downloadnumber").value;
+            // Get the element where the inputs will be added to
+            var container = document.getElementById("downloadcontainer");
+            // Remove every children it had before
+            while (container.hasChildNodes()) {
+                container.removeChild(container.lastChild);
+            }
+            for (i=0;i<number;i++){
+                // Append a node with a random text
+                container.appendChild(document.createTextNode("Download ID " + (i+1) + " "));
+                // Create an <input> element, set its type and name attributes
+                var input = document.createElement("input");
+                input.type = "text";
+                input.name = "download" + i;
+                container.appendChild(input);
+
+                // Append a node with a random text
+                container.appendChild(document.createTextNode(" Filetype "));
+                // Create an <input> element, set its type and name attributes
+                var filetype = document.createElement("input");
+                filetype.type = "text";
+                filetype.size = "3";
+                filetype.name = "filetype" + i;
+                container.appendChild(filetype);
+                // Append a line break 
+                container.appendChild(document.createElement("br"));
+            }
+        }
+
+        
+    </script>
+</head>
+<body>
+    <h1>Webtrends Script Generator</h1>
+    <form id="form">
+
+        <input type="radio" id="test-site" name="site" value="test-site">
+        <label for="test-site">Test site</label><br>
+        <input type="radio" id="live-site" name="site" value="live-site">
+        <label for="live-site">Live site</label><br>
+
+        <br>
+        <label for="page-name">Page name:</label><br>
+        <input type="text" id="page-name" name="page-name"><br>
+        <br>
+        <label for="member">Number of Input IDs:</label><br>
+        <input type="text" id="member" name="member" value="">
+        <button type="button" id="filldetails" onclick="addFields()">Add</button>
+        <div id="container">
+        </div>
+        
+        <br>
+
+        <label for="download">Number of Download IDs:</label><br>
+        <input type="text" id="downloadnumber" name="downloadnumber" value="">
+        <button type="button" id="adddownloads" onclick="addDownloads()">Add</button>
+        <div id="downloadcontainer">
+        </div>
+        
+        <br>
+        <input type="submit" value="Submit">
+        <input type="reset" value="Reset">
+    </form>
+    <br>
+    <h1>English Result</h1>
+    <pre id="en-result">
+
+    </pre>
+    <h1>French Result</h1>
+    <pre id="fr-result">
+
+    </pre>
+
+    <script>
+
+        const form = document.getElementById('form');
+        form.addEventListener('reset', (event) => {
+            var result = document.getElementById('en-result');
+            var resultFR = document.getElementById('fr-result');
+            while (result.hasChildNodes()) {
+                result.removeChild(result.lastChild);
+            }
+            while (resultFR.hasChildNodes()) {
+                resultFR.removeChild(resultFR.lastChild);
+            }
+            var container = document.getElementById("downloadcontainer");
+            // Remove every children it had before
+            while (container.hasChildNodes()) {
+                container.removeChild(container.lastChild);
+            }
+            var container = document.getElementById("container");
+            // Remove every children it had before
+            while (container.hasChildNodes()) {
+                container.removeChild(container.lastChild);
+            }
+        });
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            var result = document.getElementById('en-result');
+            var resultFR = document.getElementById('fr-result');
+            while (result.hasChildNodes()) {
+                result.removeChild(result.lastChild);
+            }
+            while (resultFR.hasChildNodes()) {
+                resultFR.removeChild(resultFR.lastChild);
+            }
+
+            
+
+            if (form.elements['site'].value === 'test-site') {
+                var site = 'ccdstest.cccma.uvic.ca';
+                var siteFR = 'testdscc.cccma.uvic.ca';
+            } else if (form.elements['site'].value === 'live-site'){
+                var site = 'climate-scenarios.canada.ca';
+                var siteFR = 'scenarios-climatiques.canada.ca';
+            }
+
+            var page_name = form.elements['page-name'].value
+            
+            var input_ids = "[";
+            for (i = 0; i < form.elements['member'].value; i++) {
+                input_ids += '"' + form.elements['member' + i].value + '"' + ", ";
+            }
+            input_ids = input_ids.slice(0, -2);
+            input_ids += "]";
+
+            
+
+            
+            console.log(form.elements['downloadnumber'].value);
+            
+            var script = "";
+
+            for (i = 0; i < form.elements['downloadnumber'].value; i++) {
+                script += `const ${form.elements['download' + i].value} = document.getElementById("${form.elements['download' + i].value}");\n`;
+            }
+            
+            script += `
+
+const domainName = ${site};
+
+function minArr(id) {
+    return [document.getElementById(id).name,document.getElementById(id).value];
+}
+
+function formArr () {  
+    var indArr = ${input_ids}; 
+    for (var i = 0; i < indArr.length; ++i) {
+        indArr[i] = minArr(indArr[i]);
+    }
+    return indArr;
+}
+
+function sendToWebtrends(filetype) { 
+    let form = formArr(); 
+    let dir = "/${page_name}/----/";
+    let ti = "${page_name.replace(/-/g, "%20")}";
+    for (var i = 0 ; i < form.length ; ++i) {
+        dir = dir+(form[i][0])+"-"+(form[i][1])+"/----/";
+        (i) ?  ti+= "%20"+(form[i][1]) : ti += form[i][1];
+    }   dir += "." + filetype;
+    
+    console.log("DcsMultiTrack function executed with the following parameters:\\n"+domainName+"\\n"+dir+"\\n"+ti);
+    dcsMultiTrack('DCS.dcssip', domainName,'DCS.dcsuri', dir,'WT.ti', ti);
+} 
+
+`;
+
+            for (i = 0; i < form.elements['downloadnumber'].value; i++) {
+                script += 
+
+`${form.elements['download' + i].value}.addEventListener( 
+    "click", 
+    function () {
+        sendToWebtrends('${form.elements['filetype' + i].value}');
+    }
+);\n\n`;
+            }
+
+
+
+            
+
+            var scriptFR = "";
+
+            for (i = 0; i < form.elements['downloadnumber'].value; i++) {
+                scriptFR += `const ${form.elements['download' + i].value} = document.getElementById("${form.elements['download' + i].value}");\n`;
+            }
+            
+            scriptFR += `
+const domainName = ${siteFR};
+
+function minArr(id) {
+    return [document.getElementById(id).name,document.getElementById(id).value];
+}
+
+function formArr () {  
+    var indArr = ${input_ids}; 
+    for (var i = 0; i < indArr.length; ++i) {
+        indArr[i] = minArr(indArr[i]);
+    }
+    return indArr;
+}
+
+function sendToWebtrends(filetype) { 
+    let form = formArr(); 
+    let dir = "/${page_name}-f/----/";
+    let ti = "${page_name.replace(/-/g, "%20")}%20f";
+    for (var i = 0 ; i < form.length ; ++i) {
+        dir = dir+(form[i][0])+"-"+(form[i][1])+"/----/";
+        (i) ?  ti+= "%20"+(form[i][1]) : ti += form[i][1];
+    }   dir += "." + filetype;
+    
+    console.log("DcsMultiTrack function executed with the following parameters:\\n"+domainName+"\\n"+dir+"\\n"+ti);
+    dcsMultiTrack('DCS.dcssip', domainName,'DCS.dcsuri', dir,'WT.ti', ti);
+}
+
+`;
+
+
+            for (i = 0; i < form.elements['downloadnumber'].value; i++) {
+                            scriptFR += 
+`${form.elements['download' + i].value}.addEventListener( 
+    "click", 
+    function () {
+        sendToWebtrends('${form.elements['filetype' + i].value}');
+    }
+);\n\n`;
+            }
+
+            txt = document.createTextNode(script);
+            txtFR = document.createTextNode(scriptFR);
+            result.appendChild(txt);
+            resultFR.appendChild(txtFR);
+
+
+
+        });
+    </script>
+</body>
+</html>
