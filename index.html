@@ -95,12 +95,8 @@
         <input type="reset" value="Reset">
     </form>
     <br>
-    <h1>English Result</h1>
+    <h1>Result</h1>
     <pre id="en-result">
-
-    </pre>
-    <h1>French Result</h1>
-    <pre id="fr-result">
 
     </pre>
 
@@ -109,13 +105,11 @@
         const form = document.getElementById('form');
         form.addEventListener('reset', (event) => {
             var result = document.getElementById('en-result');
-            var resultFR = document.getElementById('fr-result');
+
             while (result.hasChildNodes()) {
                 result.removeChild(result.lastChild);
             }
-            while (resultFR.hasChildNodes()) {
-                resultFR.removeChild(resultFR.lastChild);
-            }
+
             var container = document.getElementById("downloadcontainer");
             // Remove every children it had before
             while (container.hasChildNodes()) {
@@ -131,12 +125,9 @@
         form.addEventListener('submit', (event) => {
             event.preventDefault();
             var result = document.getElementById('en-result');
-            var resultFR = document.getElementById('fr-result');
+
             while (result.hasChildNodes()) {
                 result.removeChild(result.lastChild);
-            }
-            while (resultFR.hasChildNodes()) {
-                resultFR.removeChild(resultFR.lastChild);
             }
 
             
@@ -170,8 +161,13 @@
             }
             
             script += `
+var domainName;
 
-const domainName = ${site};
+if (document.getElementsByTagName('html')[0].getAttribute('lang') == 'en') {
+    domainName = '${site}';
+} else {
+    domainName = '${siteFR}';
+}
 
 function minArr(id) {
     return [document.getElementById(id).name,document.getElementById(id).value];
@@ -189,6 +185,10 @@ function sendToWebtrends(filetype) {
     let form = formArr(); 
     let dir = "/${page_name}/----/";
     let ti = "${page_name.replace(/-/g, "%20")}";
+    if (document.getElementsByTagName('html')[0].getAttribute('lang') == 'fr') {
+		dir = dir.slice(0, -6) + "-f" + dir.slice(-6);
+		ti += "%20f";
+	}
     for (var i = 0 ; i < form.length ; ++i) {
         dir = dir+(form[i][0])+"-"+(form[i][1])+"/----/";
         (i) ?  ti+= "%20"+(form[i][1]) : ti += form[i][1];
@@ -211,61 +211,11 @@ function sendToWebtrends(filetype) {
 );\n\n`;
             }
 
-
-
+         
             
-
-            var scriptFR = "";
-
-            for (i = 0; i < form.elements['downloadnumber'].value; i++) {
-                scriptFR += `const ${form.elements['download' + i].value} = document.getElementById("${form.elements['download' + i].value}");\n`;
-            }
-            
-            scriptFR += `
-const domainName = ${siteFR};
-
-function minArr(id) {
-    return [document.getElementById(id).name,document.getElementById(id).value];
-}
-
-function formArr () {  
-    var indArr = ${input_ids}; 
-    for (var i = 0; i < indArr.length; ++i) {
-        indArr[i] = minArr(indArr[i]);
-    }
-    return indArr;
-}
-
-function sendToWebtrends(filetype) { 
-    let form = formArr(); 
-    let dir = "/${page_name}-f/----/";
-    let ti = "${page_name.replace(/-/g, "%20")}%20f";
-    for (var i = 0 ; i < form.length ; ++i) {
-        dir = dir+(form[i][0])+"-"+(form[i][1])+"/----/";
-        (i) ?  ti+= "%20"+(form[i][1]) : ti += form[i][1];
-    }   dir += "." + filetype;
-    
-    console.log("DcsMultiTrack function executed with the following parameters:\\n"+domainName+"\\n"+dir+"\\n"+ti);
-    dcsMultiTrack('DCS.dcssip', domainName,'DCS.dcsuri', dir,'WT.ti', ti);
-}
-
-`;
-
-
-            for (i = 0; i < form.elements['downloadnumber'].value; i++) {
-                            scriptFR += 
-`${form.elements['download' + i].value}.addEventListener( 
-    "click", 
-    function () {
-        sendToWebtrends('${form.elements['filetype' + i].value}');
-    }
-);\n\n`;
-            }
 
             txt = document.createTextNode(script);
-            txtFR = document.createTextNode(scriptFR);
             result.appendChild(txt);
-            resultFR.appendChild(txtFR);
 
 
 
